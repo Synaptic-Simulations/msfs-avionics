@@ -1,3 +1,5 @@
+/// <reference types="msfstypes/JS/Avionics" />
+
 import { MathUtils } from '../math';
 import { ReadonlyFloat64Array, Vec3Math } from '../math/VecMath';
 import { LatLonInterface } from './GeoInterfaces';

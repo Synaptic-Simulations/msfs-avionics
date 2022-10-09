@@ -1,3 +1,4 @@
+/// <reference types="msfstypes/JS/simvar" />
 import { EventBus, EventBusMetaEvents, MockEventTypes, Publisher } from '../data/EventBus';
 import { PublishPacer } from '../data/EventBusPacer';
 import { SimVarDefinition, SimVarValueType } from '../data/SimVars';

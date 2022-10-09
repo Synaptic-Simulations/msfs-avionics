@@ -1,6 +1,6 @@
 {
-  "name": "msfssdk",
-  "version": "0.3.0",
+  "name": "@synaptic-simulations/msfssdk",
+  "version": "0.3.1",
   "description": "HTML and Typescript SDK for MSFS Coherent based instruments and aircraft development.",
   "main": "msfssdk.js",
   "scripts": {
@@ -17,10 +17,10 @@
     "@types/geodesy": "^2.2.2",
     "@types/node": "^17.0.21",
     "copyfiles": "^2.4.1",
-    "msfstypes": "file:../msfstypes",
     "typescript": "~4.5.5"
   },
   "dependencies": {
+    "msfstypes": "file:../msfstypes",
     "rollup-plugin-dts": "^4.2.0"
   }
 }
