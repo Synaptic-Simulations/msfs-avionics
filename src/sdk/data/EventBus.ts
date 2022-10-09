@@ -76,7 +76,7 @@ export class EventBus {
 
   /**
    * Creates an instance of an EventBus.
-   * @param useAlternativeEventSync Whether or not to use coherent event sync (optional, default false). 
+   * @param useAlternativeEventSync Whether or not to use coherent event sync (optional, default false).
    * If true, FlowEventSync will only work for gauges.
    */
   constructor(useAlternativeEventSync = false) {
@@ -347,6 +347,9 @@ abstract class EventBusSyncBase {
 
     /** Sends the queued up data packages */
     const sendFn = (): void => {
+      // Skip syncing if instrument is loaded in ACE
+      if (window.hasOwnProperty('ACE_ENGINE_HANDLE')) return;
+
       if (!this.isPaused && this.dataPackageQueue.length > 0) {
         // console.log(`Sending ${this.dataPackageQueue.length} packages`);
         const syncDataPackage: SyncDataPackage = {
