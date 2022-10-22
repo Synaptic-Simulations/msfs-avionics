@@ -36,6 +36,8 @@ export enum SimVarValueType {
     Pounds = 'pounds',
     SlugsPerCubicFoot = 'slug per cubic foot',
     FeetPerSecondSquared = 'feet per second squared',
+    FeetPerMinute = 'feet per minute',
+    Hertz = 'hertz',
 }
 
 /**
