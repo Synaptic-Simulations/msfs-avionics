@@ -2,6 +2,7 @@
 import { EventBus, EventBusMetaEvents, MockEventTypes, Publisher } from '../data/EventBus';
 import { PublishPacer } from '../data/EventBusPacer';
 import { SimVarDefinition, SimVarValueType } from '../data/SimVars';
+import { Subject } from '../sub'
 
 /**
  * A basic event-bus publisher.
@@ -218,5 +219,53 @@ export class SimVarPublisher<E> extends BasePublisher<E> {
             return svValue === 1;
         }
         return svValue;
+    }
+
+    /**
+     * Change the simvar read for a given key.
+     * @param key The key of the simvar in simVarMap
+     * @param value The new value to set the simvar to.
+     */
+    public updateSimVarSource(key: keyof E, value: SimVarDefinition): void {
+        this.simvars.set(key, value);
+    }
+}
+
+export interface SwitchableSimVarDefinition<TState> {
+    name: (state: TState) => string;
+    type: SimVarValueType;
+}
+
+/**
+ * An extension of the SimVarPublisher that allows the SimVar context to be dependent on a subject.
+ * https://github.com/flybywiresim/a32nx/blob/nd-v2/src/instruments/src/MsfsAvionicsCommon/providers/SwitchableProvider.ts
+ */
+export class SwitchableSimVarPublisher<TSimVar, TState> extends SimVarPublisher<TSimVar> {
+    protected constructor(
+        private simVars: Map<keyof TSimVar, SwitchableSimVarDefinition<TState>>,
+        public stateSubject: Subject<TState>,
+        bus: EventBus,
+    ) {
+        super(SwitchableSimVarPublisher.definitions(simVars, stateSubject.get()), bus);
+
+        stateSubject.sub((value) => this.updateDefinitions(value));
+    }
+
+    private updateDefinitions(newStateValue: TState) {
+        for (const [key, value] of this.simVars) {
+            const newName = value.name(newStateValue);
+
+            this.updateSimVarSource(key, { name: newName, type: value.type });
+        }
+    }
+
+    private static definitions<TSimVar, TState>(
+        simVars: Map<keyof TSimVar, SwitchableSimVarDefinition<TState>>,
+        state: TState,
+    ): Map<keyof TSimVar, SimVarDefinition> {
+        return new Map(Array.from(simVars.entries()).map(([k, v]) => [k, {
+            name: v.name(state),
+            type: v.type,
+        }]));
     }
 }
