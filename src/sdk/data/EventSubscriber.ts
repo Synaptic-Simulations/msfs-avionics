@@ -7,20 +7,20 @@ import { EventBus } from './EventBus';
  */
 export class EventSubscriber<E> {
 
-  /**
+    /**
    * Creates an instance of an EventSubscriber.
    * @param bus The EventBus that is the parent of this instance.
    */
-  constructor(private bus: EventBus) { }
+    constructor(private bus: EventBus) { }
 
-  /**
+    /**
    * Subscribes to a topic on the bus.
    * @param topic The topic to subscribe to.
    * @returns A consumer to bind the event handler to.
    */
-  public on<K extends keyof E & string>(topic: K): Consumer<E[K]> {
-    return new BasicConsumer<E[K]>((handler, paused) => {
-      return this.bus.on(topic, handler, paused);
-    });
-  }
+    public on<K extends keyof E & string>(topic: K): Consumer<E[K]> {
+        return new BasicConsumer<E[K]>((handler, paused) => {
+            return this.bus.on(topic, handler, paused);
+        });
+    }
 }

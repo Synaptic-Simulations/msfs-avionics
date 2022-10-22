@@ -135,101 +135,101 @@ export interface UserSettingManager<T extends UserSettingRecord> {
  * event bus, and keeps setting values up to date when receiving change events across the bus.
  */
 export class DefaultUserSettingManager<T extends UserSettingRecord> implements UserSettingManager<T> {
-  private static readonly SYNC_TOPIC_PREFIX = 'usersetting.';
+    private static readonly SYNC_TOPIC_PREFIX = 'usersetting.';
 
-  protected readonly settings: Map<string, UserSettingManagerEntry<UserSettingValue>>;
-  protected readonly publisher: Publisher<any>;
-  protected readonly subscriber: EventSubscriber<any>;
+    protected readonly settings: Map<string, UserSettingManagerEntry<UserSettingValue>>;
+    protected readonly publisher: Publisher<any>;
+    protected readonly subscriber: EventSubscriber<any>;
 
-  /**
+    /**
    * Constructor.
    * @param bus The bus used by this manager to publish setting change events.
    * @param settingDefs The setting definitions used to initialize this manager's settings.
    */
-  constructor(
+    constructor(
     protected readonly bus: EventBus,
     settingDefs: readonly UserSettingDefinition<T[keyof T]>[]
-  ) {
-    this.publisher = bus.getPublisher();
-    this.subscriber = bus.getSubscriber<T>();
+    ) {
+        this.publisher = bus.getPublisher();
+        this.subscriber = bus.getSubscriber<T>();
 
-    this.settings = new Map(settingDefs.map(def => {
-      const syncTopic = `${DefaultUserSettingManager.SYNC_TOPIC_PREFIX}${def.name}`;
-      const entry: any = {
-        syncTopic,
-        syncTime: 0
-      };
-      entry.setting = new SyncableUserSetting(def, this.onSettingValueChanged.bind(this, entry));
-      this.subscriber.on(syncTopic).handle(this.onSettingValueSynced.bind(this, entry));
-      this.onSettingValueChanged(entry, entry.setting.value);
-      return [def.name, entry];
-    }));
-  }
-
-  /** @inheritdoc */
-  public tryGetSetting<K extends string>(name: K): UserSetting<NonNullable<T[K]>> | undefined {
-    return this.settings.get(name)?.setting as UserSetting<NonNullable<T[K]>> | undefined;
-  }
-
-  /** @inheritdoc */
-  public getSetting<K extends keyof T & string>(name: K): UserSetting<NonNullable<T[K]>> {
-    const setting = this.tryGetSetting(name);
-    if (setting === undefined) {
-      throw new Error(`DefaultUserSettingManager: Could not find setting with name ${name}`);
+        this.settings = new Map(settingDefs.map(def => {
+            const syncTopic = `${DefaultUserSettingManager.SYNC_TOPIC_PREFIX}${def.name}`;
+            const entry: any = {
+                syncTopic,
+                syncTime: 0
+            };
+            entry.setting = new SyncableUserSetting(def, this.onSettingValueChanged.bind(this, entry));
+            this.subscriber.on(syncTopic).handle(this.onSettingValueSynced.bind(this, entry));
+            this.onSettingValueChanged(entry, entry.setting.value);
+            return [def.name, entry];
+        }));
     }
 
-    return setting as UserSetting<NonNullable<T[K]>>;
-  }
-
-  /** @inheritdoc */
-  public getAllSettings(): UserSetting<UserSettingValue>[] {
-    return Array.from(this.settings.values(), entry => entry.setting);
-  }
-
-  /** @inheritdoc */
-  public whenSettingChanged<K extends keyof T & string>(name: K): Consumer<NonNullable<T[K]>> {
-    const setting = this.settings.get(name);
-    if (!setting) {
-      throw new Error(`DefaultUserSettingManager: Could not find setting with name ${name}`);
+    /** @inheritdoc */
+    public tryGetSetting<K extends string>(name: K): UserSetting<NonNullable<T[K]>> | undefined {
+        return this.settings.get(name)?.setting as UserSetting<NonNullable<T[K]>> | undefined;
     }
 
-    return this.subscriber.on(name).whenChanged();
-  }
+    /** @inheritdoc */
+    public getSetting<K extends keyof T & string>(name: K): UserSetting<NonNullable<T[K]>> {
+        const setting = this.tryGetSetting(name);
+        if (setting === undefined) {
+            throw new Error(`DefaultUserSettingManager: Could not find setting with name ${name}`);
+        }
 
-  /** @inheritdoc */
-  public mapTo<M extends UserSettingRecord>(map: UserSettingMap<M, T>): MappedUserSettingManager<M, T> {
-    return new MappedUserSettingManager(this, map);
-  }
+        return setting as UserSetting<NonNullable<T[K]>>;
+    }
 
-  /**
+    /** @inheritdoc */
+    public getAllSettings(): UserSetting<UserSettingValue>[] {
+        return Array.from(this.settings.values(), entry => entry.setting);
+    }
+
+    /** @inheritdoc */
+    public whenSettingChanged<K extends keyof T & string>(name: K): Consumer<NonNullable<T[K]>> {
+        const setting = this.settings.get(name);
+        if (!setting) {
+            throw new Error(`DefaultUserSettingManager: Could not find setting with name ${name}`);
+        }
+
+        return this.subscriber.on(name).whenChanged();
+    }
+
+    /** @inheritdoc */
+    public mapTo<M extends UserSettingRecord>(map: UserSettingMap<M, T>): MappedUserSettingManager<M, T> {
+        return new MappedUserSettingManager(this, map);
+    }
+
+    /**
    * A callback which is called when one of this manager's settings has its value changed locally.
    * @param entry The entry for the setting that was changed.
    * @param value The new value of the setting.
    */
-  protected onSettingValueChanged<K extends keyof T>(entry: UserSettingManagerEntry<T[K]>, value: T[K]): void {
-    entry.syncTime = Date.now();
-    this.publisher.pub(entry.syncTopic, { value, syncTime: entry.syncTime }, true, true);
-  }
+    protected onSettingValueChanged<K extends keyof T>(entry: UserSettingManagerEntry<T[K]>, value: T[K]): void {
+        entry.syncTime = Date.now();
+        this.publisher.pub(entry.syncTopic, { value, syncTime: entry.syncTime }, true, true);
+    }
 
-  /**
+    /**
    * A callback which is called when a setting changed event is received over the event bus.
    * @param entry The entry for the setting that was changed.
    * @param data The sync data.
    */
-  protected onSettingValueSynced<K extends keyof T>(entry: UserSettingManagerEntry<T[K]>, data: UserSettingManagerSyncData<T[K]>): void {
+    protected onSettingValueSynced<K extends keyof T>(entry: UserSettingManagerEntry<T[K]>, data: UserSettingManagerSyncData<T[K]>): void {
     // protect against race conditions by not responding to sync events older than the last time this manager synced
     // the setting
-    if (data.syncTime < entry.syncTime) {
-      return;
+        if (data.syncTime < entry.syncTime) {
+            return;
+        }
+
+        entry.syncTime = data.syncTime;
+        entry.setting.syncValue(data.value);
+
+        // publish the public setting change event. Do NOT sync across the bus because doing so can result in older events
+        // being received after newer events.
+        this.publisher.pub(entry.setting.definition.name, data.value, false, true);
     }
-
-    entry.syncTime = data.syncTime;
-    entry.setting.syncValue(data.value);
-
-    // publish the public setting change event. Do NOT sync across the bus because doing so can result in older events
-    // being received after newer events.
-    this.publisher.pub(entry.setting.definition.name, data.value, false, true);
-  }
 }
 
 /**
@@ -239,108 +239,108 @@ export class DefaultUserSettingManager<T extends UserSettingRecord> implements U
  */
 export class MappedUserSettingManager<T extends UserSettingRecord, O extends UserSettingRecord> implements UserSettingManager<T & O> {
 
-  /**
+    /**
    * Creates an instance of a MappedUserSettingManager.
    * @param parent The parent setting manager.
    * @param map The map of abstracted keys to true underlying keys.
    */
-  constructor(private readonly parent: UserSettingManager<O>, private readonly map: UserSettingMap<T, O>) { }
+    constructor(private readonly parent: UserSettingManager<O>, private readonly map: UserSettingMap<T, O>) { }
 
-  /** @inheritdoc */
-  public tryGetSetting<K extends string>(name: K): UserSetting<NonNullable<(T & O)[K]>> | undefined {
-    const mappedName = (this.map[name] ?? name) as keyof O & string;
-    return this.parent.tryGetSetting(mappedName) as unknown as UserSetting<NonNullable<(T & O)[K]>> | undefined;
-  }
+    /** @inheritdoc */
+    public tryGetSetting<K extends string>(name: K): UserSetting<NonNullable<(T & O)[K]>> | undefined {
+        const mappedName = (this.map[name] ?? name) as keyof O & string;
+        return this.parent.tryGetSetting(mappedName) as unknown as UserSetting<NonNullable<(T & O)[K]>> | undefined;
+    }
 
-  /** @inheritdoc */
-  public getSetting<K extends keyof T & string>(name: K): UserSetting<NonNullable<(T & O)[K]>> {
-    const mappedName = (this.map[name] ?? name) as keyof O & string;
-    return this.parent.getSetting(mappedName) as unknown as UserSetting<NonNullable<(T & O)[K]>>;
-  }
+    /** @inheritdoc */
+    public getSetting<K extends keyof T & string>(name: K): UserSetting<NonNullable<(T & O)[K]>> {
+        const mappedName = (this.map[name] ?? name) as keyof O & string;
+        return this.parent.getSetting(mappedName) as unknown as UserSetting<NonNullable<(T & O)[K]>>;
+    }
 
-  /** @inheritdoc */
-  public whenSettingChanged<K extends keyof T & string>(name: K): Consumer<NonNullable<(T & O)[K]>> {
-    const mappedName = (this.map[name] ?? name) as keyof O & string;
-    return this.parent.whenSettingChanged(mappedName) as unknown as Consumer<NonNullable<(T & O)[K]>>;
-  }
+    /** @inheritdoc */
+    public whenSettingChanged<K extends keyof T & string>(name: K): Consumer<NonNullable<(T & O)[K]>> {
+        const mappedName = (this.map[name] ?? name) as keyof O & string;
+        return this.parent.whenSettingChanged(mappedName) as unknown as Consumer<NonNullable<(T & O)[K]>>;
+    }
 
-  /** @inheritdoc */
-  public getAllSettings(): UserSetting<UserSettingValue>[] {
-    return this.parent.getAllSettings();
-  }
+    /** @inheritdoc */
+    public getAllSettings(): UserSetting<UserSettingValue>[] {
+        return this.parent.getAllSettings();
+    }
 
-  /** @inheritdoc */
-  public mapTo<M extends UserSettingRecord>(map: UserSettingMap<M, T & O>): MappedUserSettingManager<M, T & O> {
-    return new MappedUserSettingManager(this, map);
-  }
+    /** @inheritdoc */
+    public mapTo<M extends UserSettingRecord>(map: UserSettingMap<M, T & O>): MappedUserSettingManager<M, T & O> {
+        return new MappedUserSettingManager(this, map);
+    }
 }
 
 /**
  * An implementation of a user setting which can be synced across multiple instances.
  */
 class SyncableUserSetting<T extends UserSettingValue> extends AbstractSubscribable<T> implements UserSetting<T> {
-  public readonly isMutableSubscribable = true;
+    public readonly isMutableSubscribable = true;
 
-  private _value: T;
+    private _value: T;
 
-  // eslint-disable-next-line jsdoc/require-returns
-  /** This setting's current value. */
-  public get value(): T {
-    return this._value;
-  }
-  // eslint-disable-next-line jsdoc/require-jsdoc
-  public set value(v: T) {
-    if (this._value === v) {
-      return;
+    // eslint-disable-next-line jsdoc/require-returns
+    /** This setting's current value. */
+    public get value(): T {
+        return this._value;
+    }
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    public set value(v: T) {
+        if (this._value === v) {
+            return;
+        }
+
+        this._value = v;
+        this.valueChangedCallback(v);
+        this.notify();
     }
 
-    this._value = v;
-    this.valueChangedCallback(v);
-    this.notify();
-  }
-
-  /**
+    /**
    * Constructor.
    * @param definition This setting's definition.
    * @param valueChangedCallback A function to be called whenever the value of this setting changes.
    */
-  constructor(
+    constructor(
     public readonly definition: UserSettingDefinition<T>,
     private readonly valueChangedCallback: (value: T) => void
-  ) {
-    super();
+    ) {
+        super();
 
-    this._value = definition.defaultValue;
-  }
+        this._value = definition.defaultValue;
+    }
 
-  /**
+    /**
    * Syncs this setting to a value. This will not trigger a call to valueChangedCallback.
    * @param value The value to which to sync.
    */
-  public syncValue(value: T): void {
-    if (this._value === value) {
-      return;
+    public syncValue(value: T): void {
+        if (this._value === value) {
+            return;
+        }
+
+        this._value = value;
+        this.notify();
     }
 
-    this._value = value;
-    this.notify();
-  }
+    /** @inheritdoc */
+    public get(): T {
+        return this._value;
+    }
 
-  /** @inheritdoc */
-  public get(): T {
-    return this._value;
-  }
-
-  /**
+    /**
    * Sets the value of this setting.
    * @param value The new value.
    */
-  public set(value: T): void {
-    this.value = value;
-  }
+    public set(value: T): void {
+        this.value = value;
+    }
 
-  /** @inheritdoc */
-  public resetToDefault(): void {
-    this.set(this.definition.defaultValue);
-  }
+    /** @inheritdoc */
+    public resetToDefault(): void {
+        this.set(this.definition.defaultValue);
+    }
 }

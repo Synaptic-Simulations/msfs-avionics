@@ -7,7 +7,7 @@ export namespace Wait {
    */
   // eslint-disable-next-line no-inner-declarations
   export function awaitDelay(delay: number): Promise<void> {
-    return new Promise(resolve => setTimeout(() => resolve(), delay));
+      return new Promise(resolve => setTimeout(() => resolve(), delay));
   }
 
   /**
@@ -22,28 +22,28 @@ export namespace Wait {
    */
   // eslint-disable-next-line no-inner-declarations
   export function awaitCondition(predicate: () => boolean, interval = 0, timeout = 0): Promise<void> {
-    const t0 = Date.now();
-    if (interval <= 0) {
-      const loopFunc = (resolve: () => void, reject: (reason?: any) => void): void => {
-        if (timeout > 0 && Date.now() - t0 >= timeout) {
-          reject('Await condition timed out.');
-        } else {
-          predicate() ? resolve() : requestAnimationFrame(loopFunc.bind(undefined, resolve, reject));
-        }
-      };
-      return new Promise((resolve, reject) => { loopFunc(resolve, reject); });
-    } else {
-      return new Promise((resolve, reject) => {
-        const timer = setInterval(() => {
-          if (timeout > 0 && Date.now() - t0 > timeout) {
-            clearInterval(timer);
-            reject('Await condition timed out.');
-          } else if (predicate()) {
-            clearInterval(timer);
-            resolve();
-          }
-        }, interval);
-      });
-    }
+      const t0 = Date.now();
+      if (interval <= 0) {
+          const loopFunc = (resolve: () => void, reject: (reason?: any) => void): void => {
+              if (timeout > 0 && Date.now() - t0 >= timeout) {
+                  reject('Await condition timed out.');
+              } else {
+                  predicate() ? resolve() : requestAnimationFrame(loopFunc.bind(undefined, resolve, reject));
+              }
+          };
+          return new Promise((resolve, reject) => { loopFunc(resolve, reject); });
+      } else {
+          return new Promise((resolve, reject) => {
+              const timer = setInterval(() => {
+                  if (timeout > 0 && Date.now() - t0 > timeout) {
+                      clearInterval(timer);
+                      reject('Await condition timed out.');
+                  } else if (predicate()) {
+                      clearInterval(timer);
+                      resolve();
+                  }
+              }, interval);
+          });
+      }
   }
 }

@@ -19,99 +19,99 @@ export type CombinedSubscribableInputs<Types extends readonly any[]> = {
  * A subscribable subject whose state is a combined tuple of an arbitrary number of values.
  */
 export class CombinedSubject<I extends any[]> extends AbstractSubscribable<Readonly<I>> implements MappedSubscribable<Readonly<I>> {
-  private readonly inputs: CombinedSubscribableInputs<I>;
-  private readonly inputValues: I;
-  private readonly inputSubs: Subscription[];
+    private readonly inputs: CombinedSubscribableInputs<I>;
+    private readonly inputValues: I;
+    private readonly inputSubs: Subscription[];
 
-  private _isAlive = true;
-  /** @inheritdoc */
-  public get isAlive(): boolean {
-    return this._isAlive;
-  }
+    private _isAlive = true;
+    /** @inheritdoc */
+    public get isAlive(): boolean {
+        return this._isAlive;
+    }
 
-  private _isPaused = false;
-  /** @inheritdoc */
-  public get isPaused(): boolean {
-    return this._isPaused;
-  }
+    private _isPaused = false;
+    /** @inheritdoc */
+    public get isPaused(): boolean {
+        return this._isPaused;
+    }
 
-  /**
+    /**
    * Constructor.
    * @param inputs The subscribables which provide the inputs to this subject.
    */
-  private constructor(
-    ...inputs: CombinedSubscribableInputs<I>
-  ) {
-    super();
+    private constructor(
+        ...inputs: CombinedSubscribableInputs<I>
+    ) {
+        super();
 
-    this.inputs = inputs;
-    this.inputValues = inputs.map(input => input.get()) as I;
+        this.inputs = inputs;
+        this.inputValues = inputs.map(input => input.get()) as I;
 
-    this.inputSubs = this.inputs.map((input, index) => input.sub(inputValue => {
-      this.inputValues[index] = inputValue;
-      this.notify();
-    }));
-  }
+        this.inputSubs = this.inputs.map((input, index) => input.sub(inputValue => {
+            this.inputValues[index] = inputValue;
+            this.notify();
+        }));
+    }
 
-  /**
+    /**
    * Creates a new subject whose state is a combined tuple of an arbitrary number of input values.
    * @param inputs The subscribables which provide the inputs to the new subject.
    * @returns A new subject whose state is a combined tuple of the specified input values.
    */
-  public static create<I extends any[]>(
-    ...inputs: CombinedSubscribableInputs<I>
-  ): CombinedSubject<I> {
-    return new CombinedSubject<I>(...inputs as any);
-  }
-
-  /** @inheritdoc */
-  public get(): Readonly<I> {
-    return this.inputValues;
-  }
-
-  /** @inheritdoc */
-  public pause(): void {
-    if (!this._isAlive) {
-      throw new Error('CombinedSubject: cannot pause a dead subject');
+    public static create<I extends any[]>(
+        ...inputs: CombinedSubscribableInputs<I>
+    ): CombinedSubject<I> {
+        return new CombinedSubject<I>(...inputs as any);
     }
 
-    if (this._isPaused) {
-      return;
+    /** @inheritdoc */
+    public get(): Readonly<I> {
+        return this.inputValues;
     }
 
-    for (let i = 0; i < this.inputSubs.length; i++) {
-      this.inputSubs[i].pause();
+    /** @inheritdoc */
+    public pause(): void {
+        if (!this._isAlive) {
+            throw new Error('CombinedSubject: cannot pause a dead subject');
+        }
+
+        if (this._isPaused) {
+            return;
+        }
+
+        for (let i = 0; i < this.inputSubs.length; i++) {
+            this.inputSubs[i].pause();
+        }
+
+        this._isPaused = true;
     }
 
-    this._isPaused = true;
-  }
+    /** @inheritdoc */
+    public resume(): void {
+        if (!this._isAlive) {
+            throw new Error('CombinedSubject: cannot resume a dead subject');
+        }
 
-  /** @inheritdoc */
-  public resume(): void {
-    if (!this._isAlive) {
-      throw new Error('CombinedSubject: cannot resume a dead subject');
+        if (!this._isPaused) {
+            return;
+        }
+
+        this._isPaused = false;
+
+        for (let i = 0; i < this.inputSubs.length; i++) {
+            this.inputValues[i] = this.inputs[i].get();
+            this.inputSubs[i].resume();
+        }
+
+        this.notify();
     }
 
-    if (!this._isPaused) {
-      return;
+    /** @inheritdoc */
+    public destroy(): void {
+        this._isAlive = false;
+
+        for (let i = 0; i < this.inputSubs.length; i++) {
+            this.inputSubs[i].destroy();
+        }
     }
-
-    this._isPaused = false;
-
-    for (let i = 0; i < this.inputSubs.length; i++) {
-      this.inputValues[i] = this.inputs[i].get();
-      this.inputSubs[i].resume();
-    }
-
-    this.notify();
-  }
-
-  /** @inheritdoc */
-  public destroy(): void {
-    this._isAlive = false;
-
-    for (let i = 0; i < this.inputSubs.length; i++) {
-      this.inputSubs[i].destroy();
-    }
-  }
 }

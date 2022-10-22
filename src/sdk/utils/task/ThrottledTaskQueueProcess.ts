@@ -44,80 +44,80 @@ export interface ThrottledTaskQueueHandler {
  * A process which dispatches tasks in a task queue potentially over multiple frames.
  */
 export class ThrottledTaskQueueProcess {
-  private _hasStarted = false;
-  private _hasEnded = false;
-  private _shouldAbort = false;
+    private _hasStarted = false;
+    private _hasEnded = false;
+    private _shouldAbort = false;
 
-  /**
+    /**
    * Constructor.
    * @param queue The queue to process.
    * @param handler A handler which defines the behavior of this process.
    */
-  constructor(private readonly queue: TaskQueue, private readonly handler: ThrottledTaskQueueHandler) {
-  }
+    constructor(private readonly queue: TaskQueue, private readonly handler: ThrottledTaskQueueHandler) {
+    }
 
-  /**
+    /**
    * Checks whether this process has been started.
    * @returns whether this process has been started.
    */
-  public hasStarted(): boolean {
-    return this._hasStarted;
-  }
+    public hasStarted(): boolean {
+        return this._hasStarted;
+    }
 
-  /**
+    /**
    * Checks whether this process has ended.
    * @returns whether this process has ended.
    */
-  public hasEnded(): boolean {
-    return this._hasEnded;
-  }
+    public hasEnded(): boolean {
+        return this._hasEnded;
+    }
 
-  /**
+    /**
    * Starts this process.
    */
-  public start(): void {
-    this._hasStarted = true;
-    this.processQueue(0);
-  }
+    public start(): void {
+        this._hasStarted = true;
+        this.processQueue(0);
+    }
 
-  /**
+    /**
    * Processes the queue.
    * @param elapsedFrameCount The number of frames elapsed since queue processing started.
    */
-  private processQueue(elapsedFrameCount: number): void {
-    let dispatchCount = 0;
-    const t0 = performance.now();
-    while (!this._shouldAbort && this.queue.hasNext()) {
-      if (this.handler.canContinue(elapsedFrameCount, dispatchCount, performance.now() - t0)) {
-        const task = this.queue.next();
-        task();
-        dispatchCount++;
-      } else {
-        break;
-      }
+    private processQueue(elapsedFrameCount: number): void {
+        let dispatchCount = 0;
+        const t0 = performance.now();
+        while (!this._shouldAbort && this.queue.hasNext()) {
+            if (this.handler.canContinue(elapsedFrameCount, dispatchCount, performance.now() - t0)) {
+                const task = this.queue.next();
+                task();
+                dispatchCount++;
+            } else {
+                break;
+            }
+        }
+
+        if (this._shouldAbort) {
+            return;
+        }
+
+        if (!this.queue.hasNext()) {
+            this.handler.onFinished(elapsedFrameCount);
+            this._hasEnded = true;
+        } else {
+            this.handler.onPaused(elapsedFrameCount);
+            requestAnimationFrame(this.processQueue.bind(this, elapsedFrameCount + 1));
+        }
     }
 
-    if (this._shouldAbort) {
-      return;
-    }
-
-    if (!this.queue.hasNext()) {
-      this.handler.onFinished(elapsedFrameCount);
-      this._hasEnded = true;
-    } else {
-      this.handler.onPaused(elapsedFrameCount);
-      requestAnimationFrame(this.processQueue.bind(this, elapsedFrameCount + 1));
-    }
-  }
-
-  /**
+    /**
    * Aborts this process. Has no effect if the process has not been started or if it has already ended.
    */
-  public abort(): void {
-    if (this._hasStarted && !this._hasEnded) {
-      this.handler.onAborted();
-      this._shouldAbort = true;
-      this._hasEnded = true;
+    public abort(): void {
+        if (this._hasStarted && !this._hasEnded) {
+            this.handler.onAborted();
+            this._shouldAbort = true;
+            this._hasEnded = true;
+        }
     }
-  }
 }

@@ -148,131 +148,131 @@ export interface MutableGeoProjection extends GeoProjection {
  * to define the type of projection to be implemented.
  */
 abstract class AbstractGeoProjection implements MutableGeoProjection {
-  private static readonly vec2Cache = [new Float64Array(2)];
-  private static readonly vec3Cache = [new Float64Array(3)];
-  private static readonly geoPointCache = [new GeoPoint(0, 0)];
+    private static readonly vec2Cache = [new Float64Array(2)];
+    private static readonly vec3Cache = [new Float64Array(3)];
+    private static readonly geoPointCache = [new GeoPoint(0, 0)];
 
-  protected readonly center = new GeoPoint(0, 0);
-  protected readonly centerTranslation = new Float64Array(2);
-  protected scaleFactor = UnitType.GA_RADIAN.convertTo(1, UnitType.NMILE) as number; // 1 pixel = 1 nautical mile
-  protected readonly preRotation = new Float64Array(3);
-  protected readonly translation = new Float64Array(2);
-  protected postRotation = 0;
-  protected rotationSin = 0;
-  protected rotationCos = 1;
-  protected reflectY = 1;
+    protected readonly center = new GeoPoint(0, 0);
+    protected readonly centerTranslation = new Float64Array(2);
+    protected scaleFactor = UnitType.GA_RADIAN.convertTo(1, UnitType.NMILE) as number; // 1 pixel = 1 nautical mile
+    protected readonly preRotation = new Float64Array(3);
+    protected readonly translation = new Float64Array(2);
+    protected postRotation = 0;
+    protected rotationSin = 0;
+    protected rotationCos = 1;
+    protected reflectY = 1;
 
-  protected readonly preRotationForwardTransform = new Transform3D();
-  protected readonly preRotationReverseTransform = new Transform3D();
+    protected readonly preRotationForwardTransform = new Transform3D();
+    protected readonly preRotationReverseTransform = new Transform3D();
 
-  private readonly rotationCache = [new Transform3D(), new Transform3D()];
+    private readonly rotationCache = [new Transform3D(), new Transform3D()];
 
-  /** @inheritdoc */
-  public getCenter(): GeoPointReadOnly {
-    return this.center.readonly;
-  }
+    /** @inheritdoc */
+    public getCenter(): GeoPointReadOnly {
+        return this.center.readonly;
+    }
 
-  /** @inheritdoc */
-  public getScaleFactor(): number {
-    return this.scaleFactor;
-  }
+    /** @inheritdoc */
+    public getScaleFactor(): number {
+        return this.scaleFactor;
+    }
 
-  /** @inheritdoc */
-  public getPreRotation(): ReadonlyFloat64Array {
-    return this.preRotation;
-  }
+    /** @inheritdoc */
+    public getPreRotation(): ReadonlyFloat64Array {
+        return this.preRotation;
+    }
 
-  /** @inheritdoc */
-  public getTranslation(): ReadonlyFloat64Array {
-    return this.translation;
-  }
+    /** @inheritdoc */
+    public getTranslation(): ReadonlyFloat64Array {
+        return this.translation;
+    }
 
-  /** @inheritdoc */
-  public getPostRotation(): number {
-    return this.postRotation;
-  }
+    /** @inheritdoc */
+    public getPostRotation(): number {
+        return this.postRotation;
+    }
 
-  /** @inheritdoc */
-  public getReflectY(): boolean {
-    return this.reflectY === -1;
-  }
+    /** @inheritdoc */
+    public getReflectY(): boolean {
+        return this.reflectY === -1;
+    }
 
-  /** @inheritdoc */
-  public setCenter(point: LatLonInterface): this {
-    this.center.set(point);
-    this.updateCenterTranslation();
-    return this;
-  }
+    /** @inheritdoc */
+    public setCenter(point: LatLonInterface): this {
+        this.center.set(point);
+        this.updateCenterTranslation();
+        return this;
+    }
 
-  /** @inheritdoc */
-  public setScaleFactor(factor: number): this {
-    this.scaleFactor = factor;
-    return this;
-  }
+    /** @inheritdoc */
+    public setScaleFactor(factor: number): this {
+        this.scaleFactor = factor;
+        return this;
+    }
 
-  /** @inheritdoc */
-  public setPreRotation(vec: ReadonlyFloat64Array): this {
-    this.preRotation.set(vec);
-    this.updatePreRotationTransforms();
-    this.updateCenterTranslation();
-    return this;
-  }
+    /** @inheritdoc */
+    public setPreRotation(vec: ReadonlyFloat64Array): this {
+        this.preRotation.set(vec);
+        this.updatePreRotationTransforms();
+        this.updateCenterTranslation();
+        return this;
+    }
 
-  /** @inheritdoc */
-  public setTranslation(vec: ReadonlyFloat64Array): this {
-    this.translation.set(vec);
-    return this;
-  }
+    /** @inheritdoc */
+    public setTranslation(vec: ReadonlyFloat64Array): this {
+        this.translation.set(vec);
+        return this;
+    }
 
-  /** @inheritdoc */
-  public setPostRotation(rotation: number): this {
-    this.postRotation = rotation;
-    this.rotationCos = Math.cos(rotation);
-    this.rotationSin = Math.sin(rotation);
-    return this;
-  }
+    /** @inheritdoc */
+    public setPostRotation(rotation: number): this {
+        this.postRotation = rotation;
+        this.rotationCos = Math.cos(rotation);
+        this.rotationSin = Math.sin(rotation);
+        return this;
+    }
 
-  /** @inheritdoc */
-  public setReflectY(val: boolean): this {
-    this.reflectY = val ? -1 : 1;
-    return this;
-  }
+    /** @inheritdoc */
+    public setReflectY(val: boolean): this {
+        this.reflectY = val ? -1 : 1;
+        return this;
+    }
 
-  /** @inheritdoc */
-  public copyParametersFrom(other: GeoProjection): this {
-    return this.setCenter(other.getCenter())
-      .setPreRotation(other.getPreRotation())
-      .setScaleFactor(other.getScaleFactor())
-      .setTranslation(other.getTranslation())
-      .setPostRotation(other.getPostRotation())
-      .setReflectY(other.getReflectY());
-  }
+    /** @inheritdoc */
+    public copyParametersFrom(other: GeoProjection): this {
+        return this.setCenter(other.getCenter())
+            .setPreRotation(other.getPreRotation())
+            .setScaleFactor(other.getScaleFactor())
+            .setTranslation(other.getTranslation())
+            .setPostRotation(other.getPostRotation())
+            .setReflectY(other.getReflectY());
+    }
 
-  /**
+    /**
    * Updates the pre-rotation transformation matrices.
    */
-  protected updatePreRotationTransforms(): void {
-    const phi = this.preRotation[1];
-    const gamma = this.preRotation[2];
+    protected updatePreRotationTransforms(): void {
+        const phi = this.preRotation[1];
+        const gamma = this.preRotation[2];
 
-    this.rotationCache[0].toRotationX(gamma);
-    this.rotationCache[1].toRotationY(-phi);
+        this.rotationCache[0].toRotationX(gamma);
+        this.rotationCache[1].toRotationY(-phi);
 
-    Transform3D.concat(this.preRotationForwardTransform, this.rotationCache);
-    this.preRotationReverseTransform.set(this.preRotationForwardTransform);
-    this.preRotationReverseTransform.invert();
-  }
+        Transform3D.concat(this.preRotationForwardTransform, this.rotationCache);
+        this.preRotationReverseTransform.set(this.preRotationForwardTransform);
+        this.preRotationReverseTransform.invert();
+    }
 
-  /**
+    /**
    * Updates the translation vector to move the center of this projection to the origin.
    */
-  protected updateCenterTranslation(): void {
-    const centerArray = AbstractGeoProjection.vec2Cache[0];
-    centerArray[0] = this.center.lon;
-    centerArray[1] = this.center.lat;
-    this.preRotateForward(centerArray, centerArray);
-    this.projectRaw(centerArray, this.centerTranslation);
-  }
+    protected updateCenterTranslation(): void {
+        const centerArray = AbstractGeoProjection.vec2Cache[0];
+        centerArray[0] = this.center.lon;
+        centerArray[1] = this.center.lat;
+        this.preRotateForward(centerArray, centerArray);
+        this.projectRaw(centerArray, this.centerTranslation);
+    }
 
   /**
    * Applies a raw projection.
@@ -297,29 +297,29 @@ abstract class AbstractGeoProjection implements MutableGeoProjection {
    * @returns the rotated lat/lon coordinates.
    */
   protected preRotateForward(vec: ReadonlyFloat64Array, out: Float64Array): Float64Array {
-    const lambda = this.preRotation[0];
-    const phi = this.preRotation[1];
-    const gamma = this.preRotation[2];
+      const lambda = this.preRotation[0];
+      const phi = this.preRotation[1];
+      const gamma = this.preRotation[2];
 
-    if (lambda === 0 && phi === 0 && gamma === 0) {
-      out.set(vec);
-      return out;
-    }
+      if (lambda === 0 && phi === 0 && gamma === 0) {
+          out.set(vec);
+          return out;
+      }
 
-    const lat = vec[1];
-    const lon = vec[0];
+      const lat = vec[1];
+      const lon = vec[0];
 
-    const rotatedLon = ((lon + lambda * Avionics.Utils.RAD2DEG) % 360 + 540) % 360 - 180; // enforce [-180, 180)
+      const rotatedLon = ((lon + lambda * Avionics.Utils.RAD2DEG) % 360 + 540) % 360 - 180; // enforce [-180, 180)
 
-    if (phi === 0 && gamma === 0) {
-      return Vec2Math.set(rotatedLon, lat, out);
-    }
+      if (phi === 0 && gamma === 0) {
+          return Vec2Math.set(rotatedLon, lat, out);
+      }
 
-    const cartesianVec = GeoPoint.sphericalToCartesian(lat, rotatedLon, AbstractGeoProjection.vec3Cache[0]);
-    const rotatedCartesianVec = this.preRotationForwardTransform.apply(cartesianVec, cartesianVec);
-    const rotated = AbstractGeoProjection.geoPointCache[0].setFromCartesian(rotatedCartesianVec);
+      const cartesianVec = GeoPoint.sphericalToCartesian(lat, rotatedLon, AbstractGeoProjection.vec3Cache[0]);
+      const rotatedCartesianVec = this.preRotationForwardTransform.apply(cartesianVec, cartesianVec);
+      const rotated = AbstractGeoProjection.geoPointCache[0].setFromCartesian(rotatedCartesianVec);
 
-    return Vec2Math.set(rotated.lon, rotated.lat, out);
+      return Vec2Math.set(rotated.lon, rotated.lat, out);
   }
 
   /**
@@ -329,105 +329,105 @@ abstract class AbstractGeoProjection implements MutableGeoProjection {
    * @returns the rotated lat/lon coordinates.
    */
   protected preRotateReverse(vec: ReadonlyFloat64Array, out: Float64Array): Float64Array {
-    const lambda = this.preRotation[0];
-    const phi = this.preRotation[1];
-    const gamma = this.preRotation[2];
+      const lambda = this.preRotation[0];
+      const phi = this.preRotation[1];
+      const gamma = this.preRotation[2];
 
-    if (lambda === 0 && phi === 0 && gamma === 0) {
-      out.set(vec);
-      return out;
-    }
+      if (lambda === 0 && phi === 0 && gamma === 0) {
+          out.set(vec);
+          return out;
+      }
 
-    const lat = vec[1];
-    const lon = vec[0];
+      const lat = vec[1];
+      const lon = vec[0];
 
-    let rotatedLat = lat;
-    let rotatedLon = lon;
-    if (phi !== 0 || gamma !== 0) {
-      const rotatedCartesianVec = GeoPoint.sphericalToCartesian(rotatedLat, rotatedLon, AbstractGeoProjection.vec3Cache[0]);
-      const cartesianVec = this.preRotationReverseTransform.apply(rotatedCartesianVec, rotatedCartesianVec);
-      const unrotated = AbstractGeoProjection.geoPointCache[0].setFromCartesian(cartesianVec);
+      let rotatedLat = lat;
+      let rotatedLon = lon;
+      if (phi !== 0 || gamma !== 0) {
+          const rotatedCartesianVec = GeoPoint.sphericalToCartesian(rotatedLat, rotatedLon, AbstractGeoProjection.vec3Cache[0]);
+          const cartesianVec = this.preRotationReverseTransform.apply(rotatedCartesianVec, rotatedCartesianVec);
+          const unrotated = AbstractGeoProjection.geoPointCache[0].setFromCartesian(cartesianVec);
 
-      rotatedLat = unrotated.lat;
-      rotatedLon = unrotated.lon;
-    }
+          rotatedLat = unrotated.lat;
+          rotatedLon = unrotated.lon;
+      }
 
-    rotatedLon = ((rotatedLon - lambda * Avionics.Utils.RAD2DEG) % 360 + 540) % 360 - 180; // enforce [-180, 180)
+      rotatedLon = ((rotatedLon - lambda * Avionics.Utils.RAD2DEG) % 360 + 540) % 360 - 180; // enforce [-180, 180)
 
-    return Vec2Math.set(rotatedLon, rotatedLat, out);
+      return Vec2Math.set(rotatedLon, rotatedLat, out);
   }
 
   /** @inheritdoc */
   public project(point: LatLonInterface | ReadonlyFloat64Array, out: Float64Array): Float64Array {
-    if (point instanceof Float64Array) {
-      out.set(point);
-    } else {
-      out[0] = (point as LatLonInterface).lon;
-      out[1] = (point as LatLonInterface).lat;
-    }
+      if (point instanceof Float64Array) {
+          out.set(point);
+      } else {
+          out[0] = (point as LatLonInterface).lon;
+          out[1] = (point as LatLonInterface).lat;
+      }
 
-    this.preRotateForward(out, out);
-    this.projectRaw(out, out);
+      this.preRotateForward(out, out);
+      this.projectRaw(out, out);
 
-    // translate projected center point to origin
-    out[0] -= this.centerTranslation[0];
-    out[1] -= this.centerTranslation[1];
+      // translate projected center point to origin
+      out[0] -= this.centerTranslation[0];
+      out[1] -= this.centerTranslation[1];
 
-    // apply y-reflection
-    out[1] *= this.reflectY;
+      // apply y-reflection
+      out[1] *= this.reflectY;
 
-    // apply scale factor
-    out[0] *= this.scaleFactor;
-    out[1] *= this.scaleFactor;
+      // apply scale factor
+      out[0] *= this.scaleFactor;
+      out[1] *= this.scaleFactor;
 
-    // apply post-projection rotation
-    const x = out[0];
-    const y = out[1];
-    out[0] = x * this.rotationCos - y * this.rotationSin;
-    out[1] = x * this.rotationSin + y * this.rotationCos;
+      // apply post-projection rotation
+      const x = out[0];
+      const y = out[1];
+      out[0] = x * this.rotationCos - y * this.rotationSin;
+      out[1] = x * this.rotationSin + y * this.rotationCos;
 
-    // apply post-projection translation
-    out[0] += this.translation[0];
-    out[1] += this.translation[1];
+      // apply post-projection translation
+      out[0] += this.translation[0];
+      out[1] += this.translation[1];
 
-    return out;
+      return out;
   }
 
   /** @inheritdoc */
   public invert<T extends GeoPoint | Float64Array>(vec: ReadonlyFloat64Array, out: T): T {
-    const projected = AbstractGeoProjection.vec2Cache[0];
-    projected.set(vec);
+      const projected = AbstractGeoProjection.vec2Cache[0];
+      projected.set(vec);
 
-    // invert post-projection translation
-    projected[0] -= this.translation[0];
-    projected[1] -= this.translation[1];
+      // invert post-projection translation
+      projected[0] -= this.translation[0];
+      projected[1] -= this.translation[1];
 
-    // invert post-projection rotation
-    const x = projected[0];
-    const y = projected[1];
-    projected[0] = x * this.rotationCos + y * this.rotationSin;
-    projected[1] = -x * this.rotationSin + y * this.rotationCos;
+      // invert post-projection rotation
+      const x = projected[0];
+      const y = projected[1];
+      projected[0] = x * this.rotationCos + y * this.rotationSin;
+      projected[1] = -x * this.rotationSin + y * this.rotationCos;
 
-    // invert scale factor
-    projected[0] /= this.scaleFactor;
-    projected[1] /= this.scaleFactor;
+      // invert scale factor
+      projected[0] /= this.scaleFactor;
+      projected[1] /= this.scaleFactor;
 
-    // invert y-reflection
-    projected[1] *= this.reflectY;
+      // invert y-reflection
+      projected[1] *= this.reflectY;
 
-    // translate projected center point to default projected position
-    projected[0] += this.centerTranslation[0];
-    projected[1] += this.centerTranslation[1];
+      // translate projected center point to default projected position
+      projected[0] += this.centerTranslation[0];
+      projected[1] += this.centerTranslation[1];
 
-    const inverted = this.invertRaw(projected, projected);
-    this.preRotateReverse(inverted, inverted);
+      const inverted = this.invertRaw(projected, projected);
+      this.preRotateReverse(inverted, inverted);
 
-    if (out instanceof Float64Array) {
-      out.set(inverted);
-      return out;
-    } else {
-      return (out as GeoPoint).set(inverted[1], inverted[0]) as T & GeoPoint;
-    }
+      if (out instanceof Float64Array) {
+          out.set(inverted);
+          return out;
+      } else {
+          return (out as GeoPoint).set(inverted[1], inverted[0]) as T & GeoPoint;
+      }
   }
 }
 
@@ -435,65 +435,65 @@ abstract class AbstractGeoProjection implements MutableGeoProjection {
  * A Mercator projection.
  */
 export class MercatorProjection extends AbstractGeoProjection {
-  /**
+    /**
    * Applies a raw projection.
    * @param vec - a [lon, lat] vector describing the geographic point to project.
    * @param out - a 2D vector to which to write the result.
    * @returns the projected point.
    */
-  protected projectRaw(vec: ReadonlyFloat64Array, out: Float64Array): Float64Array {
-    out[0] = vec[0] * Avionics.Utils.DEG2RAD;
-    out[1] = Math.log(Math.tan((90 + vec[1]) * Avionics.Utils.DEG2RAD / 2));
-    return out;
-  }
+    protected projectRaw(vec: ReadonlyFloat64Array, out: Float64Array): Float64Array {
+        out[0] = vec[0] * Avionics.Utils.DEG2RAD;
+        out[1] = Math.log(Math.tan((90 + vec[1]) * Avionics.Utils.DEG2RAD / 2));
+        return out;
+    }
 
-  /**
+    /**
    * Inverts a raw projection.
    * @param vec - a 2D vector describing the projected point to invert.
    * @param out - a 2D vector to which to write the result.
    * @returns the inverted point.
    */
-  protected invertRaw(vec: ReadonlyFloat64Array, out: Float64Array): Float64Array {
-    out[0] = vec[0] * Avionics.Utils.RAD2DEG;
-    out[1] = 2 * Math.atan(Math.exp(vec[1])) * Avionics.Utils.RAD2DEG - 90;
-    return out;
-  }
+    protected invertRaw(vec: ReadonlyFloat64Array, out: Float64Array): Float64Array {
+        out[0] = vec[0] * Avionics.Utils.RAD2DEG;
+        out[1] = 2 * Math.atan(Math.exp(vec[1])) * Avionics.Utils.RAD2DEG - 90;
+        return out;
+    }
 }
 
 /**
  * An orthographic projection.
  */
 export class OrthographicProjection extends AbstractGeoProjection {
-  /**
+    /**
    * Applies a raw projection.
    * @param vec - a [lon, lat] vector describing the geographic point to project.
    * @param out - a 2D vector to which to write the result.
    * @returns the projected point.
    */
-  protected projectRaw(vec: ReadonlyFloat64Array, out: Float64Array): Float64Array {
-    const lonRad = vec[0] * Avionics.Utils.DEG2RAD;
-    const latRad = vec[1] * Avionics.Utils.DEG2RAD;
-    out[0] = Math.cos(latRad) * Math.sin(lonRad);
-    out[1] = Math.sin(latRad);
-    return out;
-  }
+    protected projectRaw(vec: ReadonlyFloat64Array, out: Float64Array): Float64Array {
+        const lonRad = vec[0] * Avionics.Utils.DEG2RAD;
+        const latRad = vec[1] * Avionics.Utils.DEG2RAD;
+        out[0] = Math.cos(latRad) * Math.sin(lonRad);
+        out[1] = Math.sin(latRad);
+        return out;
+    }
 
-  /**
+    /**
    * Inverts a raw projection.
    * @param vec - a 2D vector describing the projected point to invert.
    * @param out - a 2D vector to which to write the result.
    * @returns the inverted point.
    */
-  protected invertRaw(vec: ReadonlyFloat64Array, out: Float64Array): Float64Array {
-    const x = vec[0];
-    const y = vec[1];
-    const rho = Math.hypot(x, y);
-    const c = Math.asin(rho);
-    const sinC = Math.sin(c);
-    const cosC = Math.cos(c);
+    protected invertRaw(vec: ReadonlyFloat64Array, out: Float64Array): Float64Array {
+        const x = vec[0];
+        const y = vec[1];
+        const rho = Math.hypot(x, y);
+        const c = Math.asin(rho);
+        const sinC = Math.sin(c);
+        const cosC = Math.cos(c);
 
-    out[0] = Math.atan2(x * sinC, rho * cosC) * Avionics.Utils.RAD2DEG;
-    out[1] = Math.asin(rho === 0 ? rho : y * sinC / rho) * Avionics.Utils.RAD2DEG;
-    return out;
-  }
+        out[0] = Math.atan2(x * sinC, rho * cosC) * Avionics.Utils.RAD2DEG;
+        out[1] = Math.asin(rho === 0 ? rho : y * sinC / rho) * Avionics.Utils.RAD2DEG;
+        return out;
+    }
 }

@@ -9,7 +9,7 @@ export namespace DataStore {
    * @param value The value to set.
    */
   export function set<T extends boolean | number | string>(key: string, value: T): void {
-    SetStoredData(key, JSON.stringify(value));
+      SetStoredData(key, JSON.stringify(value));
   }
 
   /**
@@ -18,12 +18,12 @@ export namespace DataStore {
    * @returns the value stored under the key, or undefined if one could not be retrieved.
    */
   export function get<T extends boolean | number | string>(key: string): T | undefined {
-    try {
-      const string = GetStoredData(key);
-      return JSON.parse(string);
-    } catch (e) {
-      return undefined;
-    }
+      try {
+          const string = GetStoredData(key);
+          return JSON.parse(string);
+      } catch (e) {
+          return undefined;
+      }
   }
 
   /**
@@ -31,6 +31,6 @@ export namespace DataStore {
    * @param key The key to remove.
    */
   export function remove(key: string): void {
-    DeleteStoredData(key);
+      DeleteStoredData(key);
   }
 }

@@ -23,22 +23,22 @@ export interface TaskQueue {
  * A task queue backed by an array.
  */
 export class ArrayTaskQueue {
-  private head = 0;
+    private head = 0;
 
-  /**
+    /**
    * Constructor.
    * @param tasks The array of tasks in this queue.
    */
-  constructor(private readonly tasks: Task[]) {
-  }
+    constructor(private readonly tasks: Task[]) {
+    }
 
-  // eslint-disable-next-line jsdoc/require-jsdoc
-  public hasNext(): boolean {
-    return this.head < this.tasks.length;
-  }
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    public hasNext(): boolean {
+        return this.head < this.tasks.length;
+    }
 
-  // eslint-disable-next-line jsdoc/require-jsdoc
-  public next(): Task {
-    return this.tasks[this.head++];
-  }
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    public next(): Task {
+        return this.tasks[this.head++];
+    }
 }

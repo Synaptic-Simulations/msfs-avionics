@@ -11,49 +11,49 @@ import { Subscription } from './Subscription';
  * An abstract implementation of a subscribable set which allows adding, removing, and notifying subscribers.
  */
 export abstract class AbstractSubscribableSet<T> implements SubscribableSet<T>, Subscribable<ReadonlySet<T>> {
-  public readonly isSubscribable = true;
-  public readonly isSubscribableSet = true;
+    public readonly isSubscribable = true;
+    public readonly isSubscribableSet = true;
 
-  /** @inheritdoc */
-  public get size(): number {
-    return this.get().size;
-  }
+    /** @inheritdoc */
+    public get size(): number {
+        return this.get().size;
+    }
 
-  protected subs: HandlerSubscription<SubscribableSetHandler<T>>[] = [];
-  protected notifyDepth = 0;
+    protected subs: HandlerSubscription<SubscribableSetHandler<T>>[] = [];
+    protected notifyDepth = 0;
 
-  /** A function which sends initial notifications to subscriptions. */
-  protected readonly initialNotifyFunc = this.initialNotify.bind(this);
+    /** A function which sends initial notifications to subscriptions. */
+    protected readonly initialNotifyFunc = this.initialNotify.bind(this);
 
-  /** A function which responds to when a subscription to this subscribable is destroyed. */
-  protected readonly onSubDestroyedFunc = this.onSubDestroyed.bind(this);
+    /** A function which responds to when a subscription to this subscribable is destroyed. */
+    protected readonly onSubDestroyedFunc = this.onSubDestroyed.bind(this);
 
   /** @inheritdoc */
   public abstract get(): ReadonlySet<T>;
 
   /** @inheritdoc */
   public has(key: T): boolean {
-    return this.get().has(key);
+      return this.get().has(key);
   }
 
   /** @inheritdoc */
   public sub(handler: SubscribableSetHandler<T>, initialNotify = false, paused = false): Subscription {
-    const sub = new HandlerSubscription(handler, this.initialNotifyFunc, this.onSubDestroyedFunc);
-    this.subs.push(sub);
+      const sub = new HandlerSubscription(handler, this.initialNotifyFunc, this.onSubDestroyedFunc);
+      this.subs.push(sub);
 
-    if (paused) {
-      sub.pause();
-    } else if (initialNotify) {
-      sub.initialNotify();
-    }
+      if (paused) {
+          sub.pause();
+      } else if (initialNotify) {
+          sub.initialNotify();
+      }
 
-    return sub;
+      return sub;
   }
 
   /** @inheritdoc */
   public unsub(handler: SubscribableSetHandler<T>): void {
-    const toDestroy = this.subs.find(sub => sub.handler === handler);
-    toDestroy?.destroy();
+      const toDestroy = this.subs.find(sub => sub.handler === handler);
+      toDestroy?.destroy();
   }
 
   /**
@@ -62,33 +62,33 @@ export abstract class AbstractSubscribableSet<T> implements SubscribableSet<T>, 
    * @param key The key related to the change.
    */
   protected notify(type: SubscribableSetEventType, key: T): void {
-    const set = this.get();
+      const set = this.get();
 
-    let needCleanUpSubs = false;
-    this.notifyDepth++;
+      let needCleanUpSubs = false;
+      this.notifyDepth++;
 
-    const subLen = this.subs.length;
-    for (let i = 0; i < subLen; i++) {
-      try {
-        const sub = this.subs[i];
-        if (sub.isAlive && !sub.isPaused) {
-          sub.handler(set, type, key);
-        }
+      const subLen = this.subs.length;
+      for (let i = 0; i < subLen; i++) {
+          try {
+              const sub = this.subs[i];
+              if (sub.isAlive && !sub.isPaused) {
+                  sub.handler(set, type, key);
+              }
 
-        needCleanUpSubs ||= !sub.isAlive;
-      } catch (error) {
-        console.error(`AbstractSubscribableSet: error in handler: ${error}`);
-        if (error instanceof Error) {
-          console.error(error.stack);
-        }
+              needCleanUpSubs ||= !sub.isAlive;
+          } catch (error) {
+              console.error(`AbstractSubscribableSet: error in handler: ${error}`);
+              if (error instanceof Error) {
+                  console.error(error.stack);
+              }
+          }
       }
-    }
 
-    this.notifyDepth--;
+      this.notifyDepth--;
 
-    if (needCleanUpSubs && this.notifyDepth === 0) {
-      this.subs = this.subs.filter(sub => sub.isAlive);
-    }
+      if (needCleanUpSubs && this.notifyDepth === 0) {
+          this.subs = this.subs.filter(sub => sub.isAlive);
+      }
   }
 
   /**
@@ -96,10 +96,10 @@ export abstract class AbstractSubscribableSet<T> implements SubscribableSet<T>, 
    * @param sub The subscription to notify.
    */
   protected initialNotify(sub: HandlerSubscription<SubscribableSetHandler<T>>): void {
-    const set = this.get();
-    for (const key of set) {
-      sub.handler(set, SubscribableSetEventType.Added, key);
-    }
+      const set = this.get();
+      for (const key of set) {
+          sub.handler(set, SubscribableSetEventType.Added, key);
+      }
   }
 
   /**
@@ -107,11 +107,11 @@ export abstract class AbstractSubscribableSet<T> implements SubscribableSet<T>, 
    * @param sub The destroyed subscription.
    */
   protected onSubDestroyed(sub: HandlerSubscription<SubscribableSetHandler<T>>): void {
-    // If we are not in the middle of a notify operation, remove the subscription.
-    // Otherwise, do nothing and let the post-notify clean-up code handle it.
-    if (this.notifyDepth === 0) {
-      this.subs.splice(this.subs.indexOf(sub), 1);
-    }
+      // If we are not in the middle of a notify operation, remove the subscription.
+      // Otherwise, do nothing and let the post-notify clean-up code handle it.
+      if (this.notifyDepth === 0) {
+          this.subs.splice(this.subs.indexOf(sub), 1);
+      }
   }
 
   /**
@@ -138,16 +138,16 @@ export abstract class AbstractSubscribableSet<T> implements SubscribableSet<T>, 
   ): MappedSubject<[ReadonlySet<T>], M>;
   // eslint-disable-next-line jsdoc/require-jsdoc
   public map<M>(
-    fn: (input: ReadonlySet<T>, previousVal?: M) => M,
-    equalityFunc?: ((a: M, b: M) => boolean),
-    mutateFunc?: ((oldVal: M, newVal: M) => void),
-    initialVal?: M
+      fn: (input: ReadonlySet<T>, previousVal?: M) => M,
+      equalityFunc?: ((a: M, b: M) => boolean),
+      mutateFunc?: ((oldVal: M, newVal: M) => void),
+      initialVal?: M
   ): MappedSubject<[ReadonlySet<T>], M> {
-    const mapFunc = (inputs: readonly [ReadonlySet<T>], previousVal?: M): M => fn(inputs[0], previousVal);
-    return mutateFunc
+      const mapFunc = (inputs: readonly [ReadonlySet<T>], previousVal?: M): M => fn(inputs[0], previousVal);
+      return mutateFunc
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      ? MappedSubject.create<[ReadonlySet<T>], M>(mapFunc, equalityFunc!, mutateFunc, initialVal!, this)
-      : MappedSubject.create<[ReadonlySet<T>], M>(mapFunc, equalityFunc ?? AbstractSubscribable.DEFAULT_EQUALITY_FUNC, this);
+          ? MappedSubject.create<[ReadonlySet<T>], M>(mapFunc, equalityFunc!, mutateFunc, initialVal!, this)
+          : MappedSubject.create<[ReadonlySet<T>], M>(mapFunc, equalityFunc ?? AbstractSubscribable.DEFAULT_EQUALITY_FUNC, this);
   }
 
   /**
@@ -191,38 +191,38 @@ export abstract class AbstractSubscribableSet<T> implements SubscribableSet<T>, 
   public pipe<M>(to: MutableSubscribableSet<M>, map: (input: T) => M, paused?: boolean): Subscription;
   // eslint-disable-next-line jsdoc/require-jsdoc
   public pipe<M>(
-    to: MutableSubscribable<any, ReadonlySet<T>> | MutableSubscribable<any, M> | MutableSubscribableSet<T> | MutableSubscribableSet<M>,
-    arg2?: ((from: ReadonlySet<T>) => M) | ((input: T) => M) | boolean,
-    arg3?: boolean
+      to: MutableSubscribable<any, ReadonlySet<T>> | MutableSubscribable<any, M> | MutableSubscribableSet<T> | MutableSubscribableSet<M>,
+      arg2?: ((from: ReadonlySet<T>) => M) | ((input: T) => M) | boolean,
+      arg3?: boolean
   ): Subscription {
-    let sub;
-    let paused;
-    if (typeof arg2 === 'function') {
-      if ('isSubscribableSet' in to) {
-        sub = new SubscribableSetPipe(this, to as MutableSubscribableSet<M>, arg2 as (input: T) => M, this.onSubDestroyedFunc);
+      let sub;
+      let paused;
+      if (typeof arg2 === 'function') {
+          if ('isSubscribableSet' in to) {
+              sub = new SubscribableSetPipe(this, to as MutableSubscribableSet<M>, arg2 as (input: T) => M, this.onSubDestroyedFunc);
+          } else {
+              sub = new SubscribablePipe(this, to as MutableSubscribable<any, M>, arg2 as (from: ReadonlySet<T>) => M, this.onSubDestroyedFunc);
+          }
+
+          paused = arg3 ?? false;
       } else {
-        sub = new SubscribablePipe(this, to as MutableSubscribable<any, M>, arg2 as (from: ReadonlySet<T>) => M, this.onSubDestroyedFunc);
+          if ('isSubscribableSet' in to) {
+              sub = new SubscribableSetPipe(this, to as MutableSubscribableSet<T>, this.onSubDestroyedFunc);
+          } else {
+              sub = new SubscribablePipe(this, to as MutableSubscribable<any, ReadonlySet<T>>, this.onSubDestroyedFunc);
+          }
+
+          paused = arg2 ?? false;
       }
 
-      paused = arg3 ?? false;
-    } else {
-      if ('isSubscribableSet' in to) {
-        sub = new SubscribableSetPipe(this, to as MutableSubscribableSet<T>, this.onSubDestroyedFunc);
+      this.subs.push(sub);
+
+      if (paused) {
+          sub.pause();
       } else {
-        sub = new SubscribablePipe(this, to as MutableSubscribable<any, ReadonlySet<T>>, this.onSubDestroyedFunc);
+          sub.initialNotify();
       }
 
-      paused = arg2 ?? false;
-    }
-
-    this.subs.push(sub);
-
-    if (paused) {
-      sub.pause();
-    } else {
-      sub.initialNotify();
-    }
-
-    return sub;
+      return sub;
   }
 }
