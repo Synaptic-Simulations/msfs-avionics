@@ -1,15 +1,15 @@
 {
-  "name": "msfstypes",
-  "version": "1.14.6",
+  "name": "@synaptic-simulations/msfstypes",
+  "version": "1.15.2",
   "description": "Base MSFS TS Types",
-  "main": "index.js",
-  "typings": "index.d.ts",
+  "main": "",
+  "types": "index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "https://workingtitlesim@dev.azure.com/workingtitlesim/KittyHawk/_git/ProjectGolf"
+    "url": "https://github.com/Synaptic-Simulations/msfs-avionics"
   },
   "author": "Asobo Studio",
   "license": "ISC"

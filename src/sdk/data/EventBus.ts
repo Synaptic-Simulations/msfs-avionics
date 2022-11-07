@@ -1,4 +1,3 @@
-/// <reference types="msfstypes/JS/common" />
 import { HandlerSubscription } from '../sub/HandlerSubscription';
 import { Subscription } from '../sub/Subscription';
 import { EventSubscriber } from './EventSubscriber';

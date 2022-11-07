@@ -1,4 +1,4 @@
-declare type AnimationDirection = 'normal' | 'reverse' | 'alternate-reverse' | 'alternate';
+export declare type AnimationDirection = 'normal' | 'reverse' | 'alternate-reverse' | 'alternate';
 interface TimelineOptions {
     direction?: AnimationDirection;
     playBackRate?: number;
@@ -21,7 +21,7 @@ interface AnimationOptions extends TimelineOptions {
 interface AnimationData extends AnimationOptions {
     delay: number;
 }
-declare type UIAnimationEventName = 'oncomplete' | 'onstart' | 'oniteration' | 'ontransitionend';
+export declare type UIAnimationEventName = 'oncomplete' | 'onstart' | 'oniteration' | 'ontransitionend';
 interface UITimelineConfiguration extends TimelineOptions {
     timeline: Array<AnimationOptions>;
 }
@@ -38,7 +38,7 @@ interface ComponentAnimationData {
     delay?: number;
     play?: boolean;
 }
-declare type AnimationProperties = {
+export declare type AnimationProperties = {
     [P in keyof CSSStyleDeclaration | 'event']?: AnimationPropertyData[];
 };
 interface TimelineEventData {
@@ -50,10 +50,10 @@ interface AnimationPropertyChange {
     property: AnimationStyleSubProperties;
     value: string;
 }
-declare type AnimationStyleSubProperties = 'animationName' | 'animationDuration' | 'animationTimingFunction' | 'animationDelay' | 'animationIterationCount' | 'animationDirection' | 'animationFillMode' | 'animationPlayState';
-declare let g_timelineCounter: number;
-declare let g_KeyframesMgr: any;
-declare class UITimeline {
+export declare type AnimationStyleSubProperties = 'animationName' | 'animationDuration' | 'animationTimingFunction' | 'animationDelay' | 'animationIterationCount' | 'animationDirection' | 'animationFillMode' | 'animationPlayState';
+export declare let g_timelineCounter: number;
+export declare let g_KeyframesMgr: any;
+export declare class UITimeline {
     animations: Array<UIAnimation>;
     id: number;
     rewinding: boolean;
@@ -104,8 +104,8 @@ declare class UITimeline {
     static launchComponentsAnimation<T extends HTMLElement>(elements: T | T[], stateFunction: (opt?: ComponentAnimationData) => UITimeline, opt?: ComponentAnimationData): Function;
     handleAnimationOptions(stateOptions: ComponentAnimationData): void;
 }
-declare let g_id: number;
-declare class UIAnimation {
+export declare let g_id: number;
+export declare class UIAnimation {
     data: AnimationData;
     currentTime: number;
     playTimestamp: number;
@@ -154,12 +154,12 @@ declare class UIAnimation {
     removeEventListener(eventName: UIAnimationEventName, callback: (event: AnimationEvent) => any): void;
     removeAllEventListeners(eventName: UIAnimationEventName): void;
 }
-declare type StyleDeclaration = {
+export declare type StyleDeclaration = {
     [s in keyof CSSStyleDeclaration]?: string;
 };
-declare class KeyframesMgr {
+export declare class KeyframesMgr {
     sheet: CSSStyleSheet;
-    declaredKeyframes: {
+    export declaredKeyframes: {
         [property: string]: string;
     };
     counter: number;

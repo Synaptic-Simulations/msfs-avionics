@@ -1,5 +1,3 @@
-/// <reference types="msfstypes/JS/dataStorage" />
-
 /* eslint-disable no-inner-declarations */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DataStore {
