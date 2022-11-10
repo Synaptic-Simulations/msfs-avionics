@@ -1,6 +1,6 @@
 {
   "name": "@synaptic-simulations/msfssdk",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "HTML and Typescript SDK for MSFS Coherent based instruments and aircraft development.",
   "main": "msfssdk.js",
   "scripts": {
@@ -22,8 +22,5 @@
     "copyfiles": "^2.4.1",
     "eslint": "8.22.0",
     "typescript": "~4.5.5"
-  },
-  "dependencies": {
-    "rollup-plugin-dts": "^4.2.0"
   }
 }
