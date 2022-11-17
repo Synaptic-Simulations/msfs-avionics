@@ -1,6 +1,6 @@
 {
   "name": "@synaptic-simulations/msfssdk",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "HTML and Typescript SDK for MSFS Coherent based instruments and aircraft development.",
   "main": "msfssdk.js",
   "scripts": {
